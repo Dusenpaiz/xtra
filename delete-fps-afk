@@ -1,0 +1,62 @@
+-- Giới hạn FPS
+task.spawn(function()
+    local targetFPS = 10
+    while task.wait(2) do
+        if setfpscap then
+            setfpscap(targetFPS)
+        elseif setfpscap2 then
+            setfpscap2(targetFPS)
+        end
+    end
+end)
+-- xóa map
+for i,v in next, workspace:GetDescendants() do
+    pcall(function()
+        v.Transparency = 1
+    end)
+end
+for i,v in next, getnilinstances() do
+    pcall(function()
+        v.Transparency = 1
+        for i1,v1 in next, v:GetDescendants() do
+            v1.Transparency = 1
+        end
+    end)
+end
+a = workspace
+a.DescendantAdded:Connect(function(v)
+    pcall(function()
+        v.Transparency = 1
+    end)
+end)
+-- ✅ Anti AFK siêu nhẹ + GUI cực gọn
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local VirtualUser = game:GetService("VirtualUser")
+    local player = Players.LocalPlayer
+
+    -- 🖥️ GUI nhỏ góc phải dưới
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "AFKGui"
+    screenGui.ResetOnSpawn = false
+    screenGui.IgnoreGuiInset = true
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    screenGui.DisplayOrder = 9999
+    screenGui.Parent = player:WaitForChild("PlayerGui")
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0, 60, 0, 18)
+    label.Position = UDim2.new(1, -70, 1, -25) -- góc phải dưới
+    label.BackgroundTransparency = 1 -- ❌ Không có nền
+    label.TextColor3 = Color3.fromRGB(0, 255, 0)
+    label.Text = "AFK"
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 10 -- nhỏ gọn
+    label.Parent = screenGui
+
+    -- 🔁 Chống AFK
+    player.Idled:Connect(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
+end)
