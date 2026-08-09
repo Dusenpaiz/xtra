@@ -1,0 +1,366 @@
+--// Server Hop 1-3 Players
+--// Ưu tiên server có 2 người
+--// GUI nhỏ + hỗ trợ mobile
+
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local PlaceId = game.PlaceId
+local CurrentJobId = game.JobId
+
+--// =========================
+--// CONFIG
+--// =========================
+
+local MIN_PLAYERS = 1
+local MAX_PLAYERS = 3
+
+-- true = ưu tiên đúng 2 người
+local PREFER_TWO = true
+
+--// =========================
+--// GUI
+--// =========================
+
+local oldGui = CoreGui:FindFirstChild("ServerHopGUI")
+
+if oldGui then
+    oldGui:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ServerHopGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+ScreenGui.Parent = CoreGui
+
+local Button = Instance.new("TextButton")
+Button.Name = "ServerHopButton"
+Button.Size = UDim2.new(0, 85, 0, 38)
+Button.Position = UDim2.new(1, -95, 0.5, -19)
+Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Button.BackgroundTransparency = 0.1
+Button.BorderSizePixel = 0
+Button.Text = "Server Hop"
+Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+Button.TextSize = 13
+Button.Font = Enum.Font.GothamBold
+Button.AutoButtonColor = true
+Button.Parent = ScreenGui
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 8)
+Corner.Parent = Button
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Thickness = 1
+Stroke.Transparency = 0.5
+Stroke.Parent = Button
+
+--// Trạng thái
+local Status = Instance.new("TextLabel")
+Status.Name = "Status"
+Status.Size = UDim2.new(0, 180, 0, 25)
+Status.Position = UDim2.new(1, -190, 0.5, 25)
+Status.BackgroundTransparency = 1
+Status.Text = ""
+Status.TextColor3 = Color3.fromRGB(255, 255, 255)
+Status.TextSize = 12
+Status.Font = Enum.Font.Gotham
+Status.TextXAlignment = Enum.TextXAlignment.Right
+Status.Parent = ScreenGui
+
+--// =========================
+--// DRAG GUI
+--// =========================
+
+local dragging = false
+local dragStart
+local startPos
+
+Button.InputBegan:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = true
+        dragStart = input.Position
+        startPos = Button.Position
+
+        input.Changed:Connect(function()
+
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+
+        end)
+
+    end
+
+end)
+
+Button.InputChanged:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch then
+
+        local connection
+
+        connection = game:GetService("UserInputService").InputChanged:Connect(function(change)
+
+            if not dragging then
+                connection:Disconnect()
+                return
+            end
+
+            if change.UserInputType == Enum.UserInputType.MouseMovement
+            or change.UserInputType == Enum.UserInputType.Touch then
+
+                local delta = change.Position - dragStart
+
+                Button.Position = UDim2.new(
+                    startPos.X.Scale,
+                    startPos.X.Offset + delta.X,
+                    startPos.Y.Scale,
+                    startPos.Y.Offset + delta.Y
+                )
+
+                Status.Position = UDim2.new(
+                    Button.Position.X.Scale,
+                    Button.Position.X.Offset - 95,
+                    Button.Position.Y.Scale,
+                    Button.Position.Y.Offset + 45
+                )
+
+            end
+
+        end)
+
+    end
+
+end)
+
+--// =========================
+--// GET SERVERS
+--// =========================
+
+local function GetServers()
+
+    local servers = {}
+    local cursor = ""
+
+    for page = 1, 5 do
+
+        local url =
+            "https://games.roblox.com/v1/games/"
+            .. PlaceId
+            .. "/servers/Public?sortOrder=Asc&limit=100"
+
+        if cursor ~= "" then
+            url = url .. "&cursor=" .. HttpService:UrlEncode(cursor)
+        end
+
+        local success, result = pcall(function()
+
+            return game:HttpGet(url)
+
+        end)
+
+        if not success then
+            break
+        end
+
+        local data
+
+        local decodeSuccess = pcall(function()
+
+            data = HttpService:JSONDecode(result)
+
+        end)
+
+        if not decodeSuccess or not data then
+            break
+        end
+
+        if data.data then
+
+            for _, server in ipairs(data.data) do
+
+                if server.id
+                and server.playing
+                and server.maxPlayers
+                and server.playing >= MIN_PLAYERS
+                and server.playing <= MAX_PLAYERS
+                and server.id ~= CurrentJobId then
+
+                    table.insert(servers, server)
+
+                end
+
+            end
+
+        end
+
+        cursor = data.nextPageCursor or ""
+
+        if cursor == "" then
+            break
+        end
+
+        task.wait(0.15)
+
+    end
+
+    return servers
+
+end
+
+--// =========================
+--// CHOOSE SERVER
+--// =========================
+
+local function ChooseServer(servers)
+
+    if #servers == 0 then
+        return nil
+    end
+
+    -- Ưu tiên đúng 2 người
+    if PREFER_TWO then
+
+        local twoPlayerServers = {}
+
+        for _, server in ipairs(servers) do
+
+            if server.playing == 2 then
+                table.insert(twoPlayerServers, server)
+            end
+
+        end
+
+        if #twoPlayerServers > 0 then
+
+            return twoPlayerServers[
+                math.random(1, #twoPlayerServers)
+            ]
+
+        end
+
+    end
+
+    -- Không có 2 người thì chọn 1 hoặc 3
+    return servers[
+        math.random(1, #servers)
+    ]
+
+end
+
+--// =========================
+--// SERVER HOP
+--// =========================
+
+local hopping = false
+
+local function ServerHop()
+
+    if hopping then
+        return
+    end
+
+    hopping = true
+
+    Button.Text = "Searching..."
+    Button.Active = false
+
+    Status.Text = "Finding 1–3 player server..."
+
+    local servers = GetServers()
+
+    if #servers == 0 then
+
+        Button.Text = "Server Hop"
+        Button.Active = true
+
+        Status.Text = "No server found"
+
+        task.delay(2, function()
+
+            if Status then
+                Status.Text = ""
+            end
+
+        end)
+
+        hopping = false
+
+        return
+    end
+
+    local target = ChooseServer(servers)
+
+    if not target then
+
+        Button.Text = "Server Hop"
+        Button.Active = true
+        Status.Text = "No suitable server"
+
+        hopping = false
+
+        return
+    end
+
+    Status.Text =
+        "Joining server: "
+        .. tostring(target.playing)
+        .. " players"
+
+    Button.Text = "Teleporting..."
+
+    task.wait(0.3)
+
+    local success = pcall(function()
+
+        TeleportService:TeleportToPlaceInstance(
+            PlaceId,
+            target.id,
+            LocalPlayer
+        )
+
+    end)
+
+    if not success then
+
+        Button.Text = "Server Hop"
+        Button.Active = true
+
+        Status.Text = "Teleport failed"
+
+        task.delay(2, function()
+
+            if Status then
+                Status.Text = ""
+            end
+
+        end)
+
+        hopping = false
+
+    end
+
+end
+
+--// =========================
+--// BUTTON
+--// =========================
+
+Button.MouseButton1Click:Connect(function()
+
+    ServerHop()
+
+end)
+
+print("Server Hop GUI loaded.")
