@@ -1,5 +1,6 @@
 local API_URL = "https://roblox-monitor.malocsenpai.workers.dev/"
 local HEARTBEAT = 300 -- 5 phút
+local serverStartTime = os.time()
 
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
@@ -166,6 +167,7 @@ local function sendData()
 
     local coins = getCoins()
     local gameName = getGameName()
+local serverTime = os.time() - serverStartTime
 
     local data = {
     username = LocalPlayer.Name,
@@ -177,7 +179,8 @@ local function sendData()
     jobId = game.JobId,
     placeId = game.PlaceId,
 
-    serverPlayers = #Players:GetPlayers()
+    serverPlayers = #Players:GetPlayers(),
+serverTime = serverTime
 }
 
     -- Chỉ gửi Coins nếu game có Coins
