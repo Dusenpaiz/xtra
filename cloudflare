@@ -1,5 +1,9 @@
 local API_URL = "https://roblox-monitor.malocsenpai.workers.dev/"
 local HEARTBEAT = 300 -- 5 phút
+
+-- ID riêng của máy này
+local MACHINE_ID = "AD-0z1"
+
 local serverStartTime = os.time()
 
 local Players = game:GetService("Players")
@@ -173,6 +177,8 @@ local serverTime = os.time() - serverStartTime
     username = LocalPlayer.Name,
     displayName = LocalPlayer.DisplayName,
     userId = LocalPlayer.UserId,
+
+machineId = MACHINE_ID,
 
     map = gameName,
 
