@@ -372,7 +372,7 @@ local function hookGameCoinLabel(label)
 end
         lastAmount = amount
 
-        label.Text = "Coins: " .. amount .. "/40 | Total: " .. _G.TotalCoinsFarmed
+        label.Text = "Coins: " .. amount .. "/50 | Total: " .. _G.TotalCoinsFarmed
 
         if amount >= 50 then
             label.TextColor3 = Color3.fromRGB(255,0,0)
