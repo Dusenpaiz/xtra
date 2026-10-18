@@ -336,7 +336,7 @@ local function setupCoinGUI()
         label.TextColor3 = Color3.fromRGB(255,255,0)
         label.TextSize = 16
         label.Font = Enum.Font.SourceSansBold
-        label.Text = "Coins: 0/40 | Total: 0"
+        label.Text = "Coins: 0/50 | Total: 0"
         label.Parent = menuFrame
     end
     return label
@@ -356,7 +356,7 @@ local function hookGameCoinLabel(label)
         :WaitForChild("Dock")
         :WaitForChild("CoinBags")
         :WaitForChild("Container")
-        :WaitForChild("Coin")
+        :WaitForChild("Candy")
         :WaitForChild("CurrencyFrame")
         :WaitForChild("Icon")
         :WaitForChild("Coins")
@@ -374,9 +374,9 @@ end
 
         label.Text = "Coins: " .. amount .. "/40 | Total: " .. _G.TotalCoinsFarmed
 
-        if amount >= 40 then
+        if amount >= 50 then
             label.TextColor3 = Color3.fromRGB(255,0,0)
-            label.Text = "FULL! ("..amount.."/40) | Total: " .. _G.TotalCoinsFarmed .. " - Resetting..."
+            label.Text = "FULL! ("..amount.."/50) | Total: " .. _G.TotalCoinsFarmed .. " - Resetting..."
             local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then humanoid.Health = 0 end
         else
@@ -500,14 +500,14 @@ task.spawn(function()
 		local success, label = pcall(function()
 			return LocalPlayer:WaitForChild("PlayerGui")
 				:WaitForChild("CrossPlatform")
-				:WaitForChild("Shop")
-				:WaitForChild("Small")
-				:WaitForChild("Container")
+				:WaitForChild("Halloween2026")
+				:WaitForChild("MainEvent")
+				:WaitForChild("Main")
+				:WaitForChild("Gifting")
 				:WaitForChild("Title")
+				:WaitForChild("Tokens")
 				:WaitForChild("Container")
-				:WaitForChild("Coins")
-				:WaitForChild("Container")
-				:WaitForChild("Amount")
+				:WaitForChild("TextLabel")
 		end)
 
 		if success and label and label.Text then
