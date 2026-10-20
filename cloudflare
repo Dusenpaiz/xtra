@@ -2,7 +2,7 @@ local API_URL = "https://roblox-monitor.malocsenpai.workers.dev/"
 local HEARTBEAT = 300 -- 5 phút
 
 -- ID riêng của máy này
-local MACHINE_ID = "AD-0z1"
+local MACHINE_ID = "phu-2"
 
 local serverStartTime = os.time()
 
@@ -59,16 +59,16 @@ local function getCoins()
         local playerGui = LocalPlayer:WaitForChild("PlayerGui", 3)
 
         local crossPlatform = playerGui:WaitForChild("CrossPlatform", 3)
-        local shop = crossPlatform:WaitForChild("Shop", 3)
-        local small = shop:WaitForChild("Small", 3)
+        local shop = crossPlatform:WaitForChild("Halloween2026", 3)
+        local small = shop:WaitForChild("MainEvent", 3)
 
-        local container1 = small:WaitForChild("Container", 3)
-        local title = container1:WaitForChild("Title", 3)
-        local container2 = title:WaitForChild("Container", 3)
+        local container1 = small:WaitForChild("Main", 3)
+        local title = container1:WaitForChild("Gifting", 3)
+        local container2 = title:WaitForChild("Title", 3)
 
-        local coins = container2:WaitForChild("Coins", 3)
+        local coins = container2:WaitForChild("Tokens", 3)
         local container3 = coins:WaitForChild("Container", 3)
-        local amount = container3:WaitForChild("Amount", 3)
+        local amount = container3:WaitForChild("TextLabel", 3)
 
         local text = tostring(amount.Text)
 
